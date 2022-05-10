@@ -1,0 +1,35 @@
+version: '2'
+services:
+  php:
+    build: ./php
+    command: /var/local/entrypoint.sh
+    restart: always
+    volumes:
+      - ../../src:/www
+  redis:
+    image: redis
+    expose:
+      - 6379
+  nginx:
+    build: ./nginx
+    ports:
+      - "9000:80"
+    links:
+      - php
+    volumes_from:
+      - php
+    restart: always
+  mysql:
+    container_name: playground_mysql
+    build: ./mysql
+    ports:
+      - "3307:3306"
+    volumes:
+      - ./mysqldata:/var/lib/mysql
+    restart: unless-stopped
+    tty: true
+    command: mysqld --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_DATABASE: db
+      MYSQL_ROOT_HOST: '%'
+      MYSQL_ROOT_PASSWORD: 123456
